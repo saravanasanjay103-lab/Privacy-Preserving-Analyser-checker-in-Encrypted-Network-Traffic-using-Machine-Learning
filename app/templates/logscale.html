@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Log Scale{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>Log Scale Flow Analysis</h1>
+  <p>Network features span many orders of magnitude, so a log axis shows where Normal and Threat flows actually differ. Data: the full cleaned CICIDS2017 table.</p>
+</div>
+<section class="card">
+  <div class="card-head"><div><h2>Interactive distribution chart</h2><p>Hover the chart to read each bin.</p></div><span class="badge" id="ls-badge">Log scale</span></div>
+  <div class="controls">
+    <div><label class="lbl" for="ls-feature">Feature</label>
+      <select id="ls-feature">{% for k, l in feature_labels.items() %}<option value="{{ k }}" {{ 'selected' if k == 'iat_std' }}>{{ l }}</option>{% endfor %}</select></div>
+    <div><span class="lbl">X axis</span>
+      <div class="seg" id="ls-scale"><button type="button" data-v="log" aria-pressed="true">Log</button><button type="button" data-v="lin" aria-pressed="false">Linear (to 99th pct)</button></div></div>
+    <div><span class="lbl">Y axis</span>
+      <div class="seg" id="ls-y"><button type="button" data-v="share" aria-pressed="true">Share of class</button><button type="button" data-v="count" aria-pressed="false">Flow count</button></div></div>
+  </div>
+  <div class="chart" id="ls-chart"></div>
+  <div class="legend"><span><i style="background:var(--green)"></i>Normal</span><span><i style="background:var(--red)"></i>Threat</span></div>
+</section>
+<div class="grid g4 mt" id="ls-tiles"></div>
+<p class="note"><b>Reading tip.</b> "Share of class" divides each bin by that class's total, so the 3,259 Threat flows are visible next to 646,060 Normal flows. Exact zeros cannot be drawn on a log axis, so they are counted separately in the tiles.</p>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/pages/logscale.js') }}"></script>{% endblock %}

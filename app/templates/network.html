@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Flow Network{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>Flow Network</h1>
+  <p>70 real holdout flows, linked to their 3 nearest neighbours by feature similarity. Slide the threshold to see which flows the model calls a threat.</p>
+</div>
+<div class="grid g-side">
+  <section class="card">
+    <div class="card-head"><div><h2>Interactive graph</h2><p>Drag to pan, scroll or pinch to zoom, click a node to inspect it.</p></div><span class="badge" id="net-badge"></span></div>
+    <div class="chart" id="net-chart" style="height:480px"></div>
+    <div class="range-row mt" style="margin-top:14px"><span class="lbl">Flag as threat above probability</span><b id="net-th-val">0.50</b></div>
+    <input type="range" id="net-th" min="0.05" max="0.95" step="0.01" value="0.5">
+    <div class="legend"><span><i style="background:var(--red)"></i>Flagged threat</span><span><i style="background:var(--green)"></i>Cleared normal</span><span><i style="background:var(--muted)"></i>Selected link</span></div>
+  </section>
+  <aside class="card">
+    <div class="card-head"><div><h2>Selected flow</h2><p>Click any node.</p></div></div>
+    <div id="net-detail" class="empty" style="min-height:140px"><strong>No flow selected</strong>Click a node in the graph.</div>
+    <h3 class="lbl mt" style="margin-top:18px">Flagged now</h3>
+    <div class="flag-list" id="net-list"></div>
+  </aside>
+</div>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/pages/network.js') }}"></script>{% endblock %}

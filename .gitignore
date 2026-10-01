@@ -1,0 +1,52 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Python build files
+build/
+dist/
+*.egg-info/
+
+# Model/cache files
+*.pkl
+*.pickle
+*.joblib
+*.h5
+*.hdf5
+*.pt
+*.pth
+*.onnx
+
+# Large project dataset
+data/flows.csv
+
+# Presentation and prompt files
+xai_ids_first_review_completed.pptx
+xai_ids_preset_fix_prompt.md
+xai_ids_rebuild_prompt.md
+xai_ids_ui_redesign_prompt.md

@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Model Metrics{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>Model Metrics</h1>
+  <p>Performance of the trained Random Forest on a held-out 25% split it never trained on ({{ '{:,}'.format(m.holdout) if m.holdout else '' }} flows).</p>
+</div>
+
+<div class="grid g4">
+  <div class="tile"><small>Accuracy</small><b>{{ (m.accuracy*100)|round(2) }}%</b></div>
+  <div class="tile good"><small>Recall (Threat)</small><b>{{ (m.recall*100)|round(1) }}%</b><span>catches attacks</span></div>
+  <div class="tile"><small>Precision (Threat)</small><b>{{ (m.precision*100)|round(1) }}%</b><span>alerts that are real</span></div>
+  <div class="tile"><small>ROC AUC</small><b>{{ m.auc|round(4) }}</b></div>
+</div>
+
+<div class="grid g-side mt">
+  <section class="card">
+    <div class="card-head"><div><h2 id="curve-title">ROC curve</h2><p>True-positive rate vs false-positive rate as the decision threshold sweeps.</p></div>
+      <div class="seg" id="mx-curve" style="width:180px"><button type="button" data-v="roc" aria-pressed="true">ROC</button><button type="button" data-v="pr" aria-pressed="false">P-R</button></div></div>
+    <div class="chart" id="mx-curve-chart"></div>
+  </section>
+  <section class="card">
+    <div class="card-head"><div><h2>Confusion matrix</h2><p>At threshold 0.50</p></div></div>
+    <div class="cm">
+      <div></div><div class="h">Predicted Normal</div><div class="h">Predicted Threat</div>
+      <div class="h">Actual Normal</div>
+      <div class="c ok"><b>{{ '{:,}'.format(m.confusion.tn) }}</b><span>true negative</span></div>
+      <div class="c no"><b>{{ '{:,}'.format(m.confusion.fp) }}</b><span>false alarm</span></div>
+      <div class="h">Actual Threat</div>
+      <div class="c no"><b>{{ m.confusion.fn }}</b><span>missed</span></div>
+      <div class="c ok"><b>{{ '{:,}'.format(m.confusion.tp) }}</b><span>true positive</span></div>
+    </div>
+    <p class="note">Of {{ m.support.Threat }} real threats in the holdout, <b>{{ m.confusion.fn }}</b> were missed. Of {{ '{:,}'.format(m.support.Normal) }} normal flows, <b>{{ '{:,}'.format(m.confusion.fp) }}</b> triggered a false alarm.</p>
+  </section>
+</div>
+
+<section class="card mt">
+  <div class="card-head"><div><h2>Decision threshold explorer</h2><p>Drag to see the recall / false-alarm trade-off at any cutoff, computed from the same holdout predictions.</p></div></div>
+  <div class="range-row"><span class="lbl">Threat probability threshold</span><b id="th-val">0.50</b></div>
+  <input type="range" id="th-slider" min="0.05" max="0.99" step="0.01" value="0.5">
+  <div class="grid g4 mt" id="th-tiles"></div>
+</section>
+
+<section class="card mt">
+  <div class="card-head"><div><h2>Score separation</h2><p>Predicted threat-probability for every holdout flow, split by true class.</p></div></div>
+  <div class="chart" id="mx-hist"></div>
+  <div class="legend"><span><i style="background:var(--green)"></i>Normal</span><span><i style="background:var(--red)"></i>Threat</span></div>
+</section>
+
+<section class="card mt">
+  <div class="card-head"><div><h2>Global feature importance</h2><p>How much each measurement matters to the Random Forest overall (not per-flow).</p></div></div>
+  <div class="chart" id="mx-imp" style="min-height:220px"></div>
+</section>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/pages/metrics.js') }}"></script>{% endblock %}

@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+{% block content %}
+<section class="hero">
+  <h1>XAI-IDS Analytics</h1>
+  <p>Explainable intrusion detection for encrypted traffic. Every verdict comes from flow metadata only, with the reasons behind it.</p>
+  <svg id="hero-trace" class="hero-trace" viewBox="0 0 760 84" preserveAspectRatio="none" role="img" aria-label="Packet timing trace"></svg>
+  <a class="btn" href="/analyze">Explore analytics</a>
+</section>
+
+<section class="card">
+  <div class="card-head">
+    <div><h2>Live model check</h2><p>Three real CICIDS2017 flows scored by the trained Random Forest right now. Select one to open its full explanation.</p></div>
+    <span class="badge">{{ backend }}</span>
+  </div>
+  <div class="live">
+    {% for s in samples %}
+    <a class="sample" href="/preset/{{ s.key }}">
+      <small>{{ s.name }}</small>
+      <b class="{{ 't' if s.label == 'Threat' else 'n' }}">{{ s.label }}</b>
+      <span>{{ (s.confidence * 100) | round(1) }}% confidence</span>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+
+<h2 class="section-title">Analytics tools</h2>
+<div class="grid g3">
+  <a class="tool" href="/analyze"><div class="ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></div><h3>Flow Inspector</h3><p>Enter six flow measurements and get a verdict, SHAP-style reasons and a what-if counterfactual.</p></a>
+  <a class="tool" href="/log-scale"><div class="ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/></svg></div><h3>Log Scale Analysis</h3><p>Compare Normal and Threat distributions of every feature on logarithmic axes.</p></a>
+  <a class="tool" href="/metrics"><div class="ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/></svg></div><h3>Model Metrics</h3><p>Holdout report, ROC and precision-recall curves, and a decision-threshold explorer.</p></a>
+  <a class="tool" href="/flow"><div class="ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h6c6 0 6 12 12 12M3 18h6c6 0 6-12 12-12"/></svg></div><h3>Decision Flow</h3><p>Sankey diagram from actual class to model verdict to outcome, including false alarms.</p></a>
+  <a class="tool" href="/network"><div class="ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="8" r="2.5"/><circle cx="12" cy="18" r="2.5"/><path d="M8 7l8 1M7 8l4 8M17 10l-4 6"/></svg></div><h3>Flow Network</h3><p>Similar flows linked together. Slide the threat threshold to see which ones the model flags.</p></a>
+  <a class="tool" href="/evasion"><div class="ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/></svg></div><h3>Evasion Lab</h3><p>See how jitter, padding or throttling can push a botnet flow across the decision boundary.</p></a>
+</div>
+
+<div class="grid g4 mt">
+  <div class="tile"><small>Cleaned flows</small><b>{{ '{:,}'.format(audit.rows_written) if audit.rows_written else '649,319' }}</b><span>CICIDS2017</span></div>
+  <div class="tile"><small>Features</small><b>6</b><span>metadata only</span></div>
+  <div class="tile good"><small>Threat recall (holdout)</small><b>{{ ((m.recall or 0.9865) * 100) | round(1) }}%</b><span>{{ m.confusion.fn if m.confusion else 11 }} threats missed</span></div>
+  <div class="tile bad"><small>False alarms (holdout)</small><b>{{ m.confusion.fp if m.confusion else 627 }}</b><span>44% of alerts</span></div>
+</div>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/pages/home.js') }}"></script>{% endblock %}

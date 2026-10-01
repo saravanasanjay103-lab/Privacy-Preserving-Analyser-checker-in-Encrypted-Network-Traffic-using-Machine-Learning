@@ -1,0 +1,30 @@
+{
+  "source": "CICIDS2017 MachineLearningCSV / CICFlowMeter output",
+  "source_files": [
+    "Monday-WorkingHours.pcap_ISCX.csv",
+    "Friday-WorkingHours-Morning.pcap_ISCX.csv",
+    "Friday-WorkingHours-Afternoon-PortScan.pcap_ISCX.csv"
+  ],
+  "source_dates": "Monday July 3, 2017 and Friday July 7, 2017",
+  "attack_types": [
+    "Botnet ARES",
+    "PortScan"
+  ],
+  "rows_read": 1007418,
+  "rows_dropped_non_numeric_or_infinite": 930,
+  "rows_dropped_duplicate": 357169,
+  "rows_written": 649319,
+  "class_counts": {
+    "Normal": 646060,
+    "Threat": 3259
+  },
+  "mapping": {
+    "packet_count": "Total Fwd Packets + Total Backward Packets",
+    "avg_packet_size": "Average Packet Size",
+    "flow_duration": "Flow Duration / 1,000,000 (microseconds -> seconds)",
+    "byte_rate": "Flow Bytes/s (bytes per second)",
+    "iat_mean": "Flow IAT Mean / 1,000 (microseconds -> milliseconds)",
+    "iat_std": "Flow IAT Std / 1,000 (microseconds -> milliseconds)",
+    "label": "Label: BENIGN -> 0, every attack label -> 1"
+  }
+}

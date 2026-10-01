@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Evasion Lab{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>Evasion Lab</h1>
+  <p>Start from a real high-confidence botnet flow (Friday-WorkingHours ARES beaconing) and apply one evasion technique at a time. Every point is scored live by the trained model.</p>
+</div>
+<section class="card">
+  <div class="card-head"><div><h2>Technique</h2><p>Each sweeps one feature the technique would actually change.</p></div></div>
+  <div class="seg" id="ev-tech">
+    <button type="button" data-v="jitter" aria-pressed="true">Timing jitter</button>
+    <button type="button" data-v="padding" aria-pressed="false">Packet padding</button>
+    <button type="button" data-v="throttle" aria-pressed="false">Rate throttling</button>
+  </div>
+  <div class="chart mt" id="ev-chart" style="margin-top:18px"></div>
+  <p class="note" id="ev-note"></p>
+</section>
+<div class="grid g4 mt">
+  <div class="tile"><small>Starting score</small><b id="ev-start">-</b><span>original flow</span></div>
+  <div class="tile" id="ev-tile-end"><small>Score at max evasion</small><b id="ev-end">-</b></div>
+  <div class="tile" id="ev-tile-cross"><small>Crosses 0.5 at</small><b id="ev-cross">-</b></div>
+  <div class="tile"><small>Base flow</small><b style="font-size:1.1rem">Botnet C2</b><span>Friday-WorkingHours ARES</span></div>
+</div>
+<section class="card mt">
+  <h2 style="margin-bottom:10px">Why this matters</h2>
+  <ol class="steps">
+    <li><b>Timing jitter</b><span>Random delay added between packets raises inter-arrival std deviation, which the model weighs heavily for beacon-like traffic.</span></li>
+    <li><b>Packet padding</b><span>Extra bytes per packet push average packet size toward normal ranges, hiding the tiny fixed-size beacons botnets use.</span></li>
+    <li><b>Rate throttling</b><span>Slowing transmission drops the byte rate, the single strongest signal separating C2 beacons from browsing traffic in this dataset.</span></li>
+  </ol>
+  <p class="note mt" style="margin-top:14px"><b>Limitation.</b> This model only sees flow metadata, so it has no way to tell a padded/throttled attack from genuinely light traffic - a real adversary with enough patience can lower detection this way. That is a known limitation of metadata-only IDS, not a bug.</p>
+</section>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/pages/evasion.js') }}"></script>{% endblock %}

@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Contact{% endblock %}
+{% block content %}
+<div class="page-head"><h1>Contact</h1><p>Project team and feedback.</p></div>
+<div class="grid g2">
+  <section class="card">
+    <h2>Team</h2>
+    {% for m in site.team %}
+    <div class="person" style="margin-bottom:10px"><div class="avatar">{{ m.name[0] }}</div><div><b>{{ m.name }}</b><br><small>{{ m.role }}</small></div></div>
+    {% endfor %}
+    <div class="person"><div class="avatar">{{ site.guide.name[0] }}</div><div><b>{{ site.guide.name }}</b><br><small>{{ site.guide.role }}</small></div></div>
+  </section>
+  <section class="card">
+    <h2>Get in touch</h2>
+    <p style="color:var(--muted);margin-bottom:16px">Found an issue with a chart or a number? This form is UI-only for now (no backend send) - edit <code>SITE</code> in <code>app/app.py</code> to set a real email, or wire the form to your own endpoint.</p>
+    <div class="field"><label class="lbl">Email</label><input type="email" value="{{ site.email }}" readonly></div>
+    <form onsubmit="event.preventDefault(); this.querySelector('.btn').textContent='Thanks - noted locally';">
+      <div class="field"><label class="lbl" for="c-name">Your name</label><input id="c-name" type="text" placeholder="Jane Doe"></div>
+      <div class="field"><label class="lbl" for="c-msg">Message</label><textarea id="c-msg" rows="4" placeholder="Feedback about a page or metric..."></textarea></div>
+      <button class="btn block" type="submit">Send</button>
+    </form>
+  </section>
+</div>
+{% endblock %}

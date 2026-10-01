@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}Flow Inspector{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>Flow Inspector</h1>
+  <p>Enter the six metadata measurements of a network flow. The model returns a verdict, how sure it is, and which measurements drove the decision.</p>
+</div>
+
+<section class="card" aria-labelledby="mon-title">
+  <div class="card-head">
+    <div><h2 id="mon-title">Packet timing monitor</h2><p>Spacing follows inter-arrival time, height follows packet size. The same input always draws the same trace.</p></div>
+    <span class="badge" id="trace-mode">awaiting flow</span>
+  </div>
+  <div class="chart"><svg id="pulse" viewBox="0 0 900 170" preserveAspectRatio="none" height="170" role="img" aria-label="Deterministic packet timing trace"></svg></div>
+</section>
+
+<div class="grid g-form mt">
+  <section class="card" aria-labelledby="in-title">
+    <div class="card-head"><div><h2 id="in-title">Flow input</h2><p>Load a real CICIDS2017 example or type your own.</p></div></div>
+    <nav class="seg" style="margin-bottom:18px" aria-label="Load a representative flow">
+      {% for key, name in preset_names.items() %}<a href="/preset/{{ key }}">{{ name }}</a>{% endfor %}
+    </nav>
+    <form method="POST" action="/analyze">
+      {% for key, label in feature_labels.items() %}
+      <div class="field">
+        <label for="{{ key }}">{{ label }}</label>
+        <input type="number" step="any" name="{{ key }}" id="{{ key }}" value="{{ values[key] }}" required>
+      </div>
+      {% endfor %}
+      <button class="btn block" type="submit">Analyze flow</button>
+    </form>
+  </section>
+
+  <section class="card" aria-labelledby="res-title">
+    <div class="card-head"><div><h2 id="res-title">Model reading</h2><p>Verdict and the reasons behind it.</p></div>
+      {% if result and not result.error %}<span class="badge">{{ result.explainer_backend }}</span>{% endif %}</div>
+    {% if not result %}
+      <div class="empty"><strong>No flow analysed yet</strong>Pick an example or enter six measurements, then select Analyze flow.</div>
+    {% elif result.error %}
+      <p class="error">{{ result.error }}</p>
+    {% else %}
+      <div class="verdict">
+        <span class="big {{ 'threat' if result.label == 'Threat' else 'normal' }}" id="verdict-label">{{ result.label }}</span>
+        <span class="conf" id="verdict-conf">{{ (result.confidence * 100) | round(1) }}% confidence</span>
+      </div>
+      <div class="meter {{ 'threat' if result.label == 'Threat' else 'normal' }}" role="img" aria-label="Confidence"><i style="width: {{ (result.confidence * 100) | round(1) }}%"></i></div>
+
+      <h3 class="lbl" style="margin-top:22px">Top contributing signals</h3>
+      <ul class="reasons">
+        {% for reason in result.top_reasons %}<li>{{ reason }}</li>{% endfor %}
+      </ul>
+      {% if result.counterfactual %}
+      <div class="whatif"><b>What-if</b> {{ result.counterfactual }}</div>
+      {% endif %}
+
+      <h3 class="lbl" style="margin-top:26px">Influence of each feature</h3>
+      {% set signed = result.explainer_backend == 'SHAP' %}
+      {% set mx = (result.contributions | map(attribute='score') | map('abs') | max) or 1 %}
+      <div class="contrib">
+        {% for r in result.contributions %}
+        <span>{{ r.key }}</span>
+        {% if signed %}
+        <div class="bar signed"><i style="{{ 'left:50%;' if r.score >= 0 else '' }}width: {{ (abs_pct(r.score, mx) / 2) }}%;{{ 'right:50%;left:auto;' if r.score < 0 else '' }}background: {{ 'var(--red)' if r.score >= 0 else 'var(--green)' }}"></i></div>
+        {% else %}
+        <div class="bar"><i style="left:0;width: {{ abs_pct(r.score, mx) }}%"></i></div>
+        {% endif %}
+        <span class="v">{{ '%.3f' | format(r.score) }}</span>
+        {% endfor %}
+      </div>
+      <p class="note">{% if signed %}<b>SHAP values.</b> Red pushes toward Threat, green toward Normal.{% else %}<b>Fallback estimate.</b> Bar length shows feature importance times how unusual the value is compared with normal traffic. Install <code>shap</code> for signed per-flow values.{% endif %}</p>
+
+      <h3 class="lbl" style="margin-top:22px">Your flow vs. class averages</h3>
+      <div class="scroll-x"><table class="data">
+        <thead><tr><th>Feature</th><th class="num">This flow</th><th class="num">Normal avg</th><th class="num">Threat avg</th></tr></thead>
+        <tbody>{% for r in result.contributions %}
+          <tr><td>{{ r.key }}</td><td class="num">{{ '%.4g' | format(r.value) }}</td><td class="num">{{ '%.4g' | format(r.normal) }}</td><td class="num">{{ '%.4g' | format(r.threat) }}</td></tr>
+        {% endfor %}</tbody>
+      </table></div>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/pages/analyze.js') }}"></script>{% endblock %}

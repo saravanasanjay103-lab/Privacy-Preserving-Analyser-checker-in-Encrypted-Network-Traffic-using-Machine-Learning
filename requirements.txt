@@ -1,0 +1,5 @@
+numpy
+pandas
+scikit-learn
+flask
+shap        # optional — code auto-falls-back to a custom explainer if this isn't installed

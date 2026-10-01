@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Decision Flow{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>Decision Flow</h1>
+  <p>How {{ '{:,}'.format(m.holdout) if m.holdout else '' }} holdout flows move from their true class, through the model's verdict, to the final outcome.</p>
+</div>
+<section class="card">
+  <div class="card-head"><div><h2>Sankey: actual class &rarr; model verdict &rarr; outcome</h2><p>Band width is proportional to flow count. Hover a band for the exact number.</p></div></div>
+  <div class="chart" id="sankey" style="min-height:420px"></div>
+  <div class="legend">
+    <span><i style="background:var(--green)"></i>Correct</span>
+    <span><i style="background:var(--red)"></i>Missed threat</span>
+    <span><i style="background:var(--yellow)"></i>False alarm</span>
+  </div>
+</section>
+<div class="grid g3 mt">
+  <div class="card"><h3 style="margin:0 0 6px">True negatives</h3><p class="conf" style="font-size:13px">Normal traffic correctly left alone.</p><b style="font-size:1.8rem;color:var(--green)">{{ '{:,}'.format(m.confusion.tn) }}</b></div>
+  <div class="card"><h3 style="margin:0 0 6px">False alarms</h3><p class="conf" style="font-size:13px">Normal traffic that triggered an alert.</p><b style="font-size:1.8rem;color:var(--yellow)">{{ '{:,}'.format(m.confusion.fp) }}</b></div>
+  <div class="card"><h3 style="margin:0 0 6px">Missed threats</h3><p class="conf" style="font-size:13px">Real attacks the model let through.</p><b style="font-size:1.8rem;color:var(--red)">{{ m.confusion.fn }}</b></div>
+</div>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/pages/flow.js') }}"></script>{% endblock %}

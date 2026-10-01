@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}About{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>About this project</h1>
+  <p>A privacy-preserving, explainable intrusion detection system built on flow metadata alone - never packet payloads.</p>
+</div>
+
+<section class="card">
+  <h2>Pipeline</h2>
+  <ol class="steps">
+    <li><b>1. Raw capture</b><span>CICIDS2017 CSV exports ({{ '{:,}'.format(audit.rows_read) if audit.rows_read else 'full dataset' }} rows read).</span></li>
+    <li><b>2. Cleaning</b><span>Malformed rows and headers-in-data removed, leaving {{ '{:,}'.format(audit.rows_written) if audit.rows_written else '' }} valid flows.</span></li>
+    <li><b>3. Feature reduction</b><span>Every flow reduced to 6 metadata fields: packet count, average packet size, duration, byte rate, and inter-arrival mean/std - no payload is ever read.</span></li>
+    <li><b>4. Model training</b><span>A Random Forest classifier learns Normal vs. Threat from the 6 features on a stratified 75/25 split.</span></li>
+    <li><b>5. Explanation</b><span>{{ 'SHAP' if m.importance else 'A' }} explainer attributes each verdict back to the input features so every alert comes with a reason, not just a label.</span></li>
+  </ol>
+</section>
+
+<div class="grid g2 mt">
+  <section class="card">
+    <h2>Dataset audit</h2>
+    <table class="data">
+      <tbody>
+        {% if audit %}{% for k, v in audit.items() %}<tr><td>{{ k.replace('_',' ') }}</td><td class="num">{{ v }}</td></tr>{% endfor %}
+        {% else %}<tr><td colspan="2">Run <code>src/prepare_data.py</code> to generate <code>data/real_data_audit.json</code>.</td></tr>{% endif %}
+      </tbody>
+    </table>
+  </section>
+  <section class="card">
+    <h2>Limitations</h2>
+    <ul class="reasons">
+      <li>Metadata-only design cannot see payload content, so it trades some detection power for privacy.</li>
+      <li>Trained on CICIDS2017; behaviour on live traffic from a different network will differ.</li>
+      <li>{{ m.confusion.fp if m.confusion else '~600' }} false alarms in the holdout set - see Model Metrics to tune the threshold.</li>
+      <li>Padding, jitter and throttling can lower detection confidence - see the Evasion Lab.</li>
+    </ul>
+  </section>
+</div>
+
+<section class="card mt">
+  <h2>Why explainability matters here</h2>
+  <p style="color:var(--muted)">A black-box "Threat" label is hard to act on. This system pairs every verdict with the feature values that drove it and how they compare with class averages, so an analyst can judge whether to trust an alert instead of taking it on faith.</p>
+</section>
+{% endblock %}
